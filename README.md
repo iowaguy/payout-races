@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/789460840.svg)](https://zenodo.org/doi/10.5281/zenodo.11002328)
+
 # Payout Race README
 ## Resource Requirements
 A commodity laptop is fine. The experiments in the paper were run on a 2021 Lenovo X1 Carbon with 8 cores and 32 GB RAM.
