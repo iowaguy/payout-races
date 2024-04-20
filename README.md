@@ -1,4 +1,11 @@
 # Payout Race README
+## Resource Requirements
+A commodity laptop is fine. The experiments in the paper were run on a 2021 Lenovo X1 Carbon with 8 cores and 32 GB RAM.
+
+## Time Estimates
+1. Building Docker image (~1-2 minutes)
+2. Model checking each property by running the container (~1 second per property)
+
 ## Docker
 Our model can be checked with the provided Docker setup. First, build the docker image. From inside the directory, run
 
