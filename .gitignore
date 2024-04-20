@@ -1,0 +1,4 @@
+*.trail
+pan*
+*.tmp
+/model.tmp.pml

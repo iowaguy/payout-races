@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -e
+
+MODELDIR=models
+PROPDIR=properties
+POSITIONAL_ARGS=()
+DNP=false
+PROPERTY=
+MAXLENGTH=
+MODEL=model.tmp.pml
+MODEL_TRAIL=${MODEL}.trail
+
+clean() {
+  make clean
+}
+
+setup_property() {
+  rm -f $MODEL
+  cat $MODELDIR/normal-operation.pml $PROPDIR/prop${1}.pml > $MODEL
+}
+
+setup_no_properties() {
+  rm -f $MODEL
+  cp $MODELDIR/normal-operation.pml $MODEL
+}
+
+verify_property() {
+  spin -a $MODEL
+  cc -o pan pan.c
+  ./pan
+}
+
+verify_no_properties() {
+  spin -a $MODEL
+  cc -o pan pan.c
+  ./pan
+}
+
+# Verify with detection for non-progress cycles
+verify_property_dnp() {
+  spin -a $MODEL
+  cc -DNP -o pan pan.c
+  ./pan -l
+}
+
+replay_short() {
+  spin -c -k $MODEL_TRAIL $MODEL
+}
+
+replay_verbose() {
+  spin -t0 -w -s -r -c -k $MODEL_TRAIL -p $MODEL
+}
+
+shorten_violation() {
+  spin -a $MODEL
+  cc -DREACH -o pan pan.c
+  ./pan -i -m$1
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -dnp|--detectnonprogress)
+      DNP=true
+      shift # past argument
+      ;;
+    -p|--property)
+      PROPERTY="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -s|--shortenviolation)
+      MAXLENGTH="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -rs|--replayshort)
+      replay_short
+      exit 0
+      ;;
+    -rv|--replayverbose)
+      replay_verbose
+      exit 0
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+if [[ "x$PROPERTY" != "x" ]]; then
+  clean
+  setup_property $PROPERTY
+
+  if [[ $DNP == true ]]; then
+    verify_property_dnp
+  else
+    verify_property
+  fi
+elif [[ "x$MAXLENGTH" != "x" ]]; then
+  shorten_violation $MAXLENGTH
+else
+  clean
+  setup_no_properties
+  verify_no_properties
+fi
